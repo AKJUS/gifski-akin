@@ -16,7 +16,7 @@ pub struct GifskiWasm {
 #[wasm_bindgen]
 impl GifskiWasm {
     #[wasm_bindgen(constructor)]
-    pub fn new(width: u32, height: u32, quality: u8) -> Result<GifskiWasm, JsValue> {
+    pub fn new(width: u32, height: u32, quality: u8) -> Result<Self, JsValue> {
         // Better panic messages in browser console
         console_error_panic_hook::set_once();
         
@@ -28,7 +28,7 @@ impl GifskiWasm {
             repeat: Repeat::Infinite,
         };
         
-        Ok(GifskiWasm { 
+        Ok(Self { 
             settings,
             frames: Vec::new(),
             width,
@@ -64,7 +64,7 @@ impl GifskiWasm {
         }
         
         let (collector, writer) = crate::new(self.settings)
-            .map_err(|e| JsValue::from_str(&format!("Failed to create gifski: {:?}", e)))?;
+            .map_err(|e| JsValue::from_str(&format!("Failed to create gifski: {e:?}")))?;
         
         let frames = self.frames;
         let output = Arc::new(Mutex::new(Vec::new()));
@@ -77,14 +77,14 @@ impl GifskiWasm {
         
         for (frame_index, (img, timestamp)) in frames.into_iter().enumerate() {
             collector.add_frame_rgba(frame_index, img, timestamp)
-                .map_err(|e| JsValue::from_str(&format!("Failed to add frame {}: {:?}", frame_index, e)))?;
+                .map_err(|e| JsValue::from_str(&format!("Failed to add frame {frame_index}: {e:?}")))?;
         }
         
         drop(collector);
         
         writer_handle.join()
             .map_err(|_| JsValue::from_str("Writer thread panicked"))?
-            .map_err(|e| JsValue::from_str(&format!("Failed to write GIF: {:?}", e)))?;
+            .map_err(|e| JsValue::from_str(&format!("Failed to write GIF: {e:?}")))?;
         
         let output_vec = Arc::try_unwrap(output)
             .map_err(|_| JsValue::from_str("Failed to unwrap output"))?

@@ -184,7 +184,7 @@ impl Acc {
             let diff_with_bg = if self.bg_set.a > 0 {
                 let bg = color_diff(self.bg_set.rgb(), curr);
                 let bg_blur = color_diff(self.bg_set.rgb(), curr_blur);
-                if bg < bg_blur { bg } else { (bg + bg_blur) / 2 }
+                if bg < bg_blur { bg } else { u32::midpoint(bg, bg_blur) }
             } else { 1<<20 };
 
             if self.stayed_for < self.can_stay_for {
@@ -347,7 +347,7 @@ fn pixel_importance(diff_with_bg: u32, threshold: u32, min: u8, max: u8) -> u8 {
 
 #[inline(always)]
 fn avg8(a: u8, b: u8) -> u8 {
-    ((u16::from(a) + u16::from(b)) / 2) as u8
+    u8::midpoint(a, b)
 }
 
 #[inline(always)]

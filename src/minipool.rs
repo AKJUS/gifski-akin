@@ -32,9 +32,8 @@ pub fn new_scope<P, C, R>(num_threads: NonZeroU8, name: &str, waiter: P, consume
         let thread = move || {
             catch_unwind(move || consumer(failed))
                 .map_err(|_| Error::ThreadSend).and_then(|x| x)
-                .map_err(|e| {
+                .inspect_err(|_e| {
                     failed.store(true, Relaxed);
-                    e
                 })
         };
         let handles = std::iter::repeat(thread).enumerate()
@@ -48,9 +47,8 @@ pub fn new_scope<P, C, R>(num_threads: NonZeroU8, name: &str, waiter: P, consume
                 Error::ThreadSend
             })?;
 
-        let res = waiter().map_err(|e| {
+        let res = waiter().inspect_err(|_e| {
             failed.store(true, Relaxed);
-            e
         });
         handles.into_iter().try_for_each(|h| h.join().map_err(|_| Error::ThreadSend)?)?;
         res

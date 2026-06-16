@@ -650,7 +650,7 @@ impl ProgressReporter for ProgressBar {
         let min_frames = self.total.map_or(10, |t| (t / 16).clamp(5, 50));
         if self.frames > min_frames {
             let total_size = bytes * self.pb.total / self.frames;
-            let new_estimate = if total_size >= self.previous_estimate { total_size } else { (self.previous_estimate + total_size) / 2 };
+            let new_estimate = if total_size >= self.previous_estimate { total_size } else { u64::midpoint(self.previous_estimate, total_size) };
             self.previous_estimate = new_estimate;
             if self.displayed_estimate.abs_diff(new_estimate) > new_estimate / 10 {
                 self.displayed_estimate = new_estimate;

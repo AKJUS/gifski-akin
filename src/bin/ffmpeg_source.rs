@@ -23,7 +23,7 @@ impl Source for FfmpegDecoder {
 
 impl FfmpegDecoder {
     pub fn new(src: SrcPath, rate: Fps, settings: Settings) -> BinResult<Self> {
-        ffmpeg::init().map_err(|e| format!("Unable to initialize ffmpeg: {}", e))?;
+        ffmpeg::init().map_err(|e| format!("Unable to initialize ffmpeg: {e}"))?;
         let input_context = match src {
             SrcPath::Path(path) => ffmpeg::format::input(&path)
                 .map_err(|e| format!("Unable to open video file {}: {}", path.display(), e))?,
@@ -33,8 +33,8 @@ impl FfmpegDecoder {
         // take fps override into account
         let filter_fps = rate.fps.unwrap_or(DEFAULT_FPS) / rate.speed;
         let stream = input_context.streams().best(ffmpeg::media::Type::Video).ok_or("The file has no video tracks")?;
-        let time_base = stream.time_base().numerator() as f64 / stream.time_base().denominator() as f64;
-        let frames = (stream.duration() as f64 * time_base * filter_fps as f64).ceil() as u64;
+        let time_base = f64::from(stream.time_base().numerator()) / f64::from(stream.time_base().denominator());
+        let frames = (stream.duration() as f64 * time_base * f64::from(filter_fps)).ceil() as u64;
         Ok(Self { input_context, frames, rate, settings })
     }
 
@@ -46,7 +46,7 @@ impl FfmpegDecoder {
 
             let mut codec_context = ffmpeg::codec::context::Context::new();
             codec_context.set_parameters(stream.parameters())?;
-            let decoder = codec_context.decoder().video().map_err(|e| format!("Unable to decode the codec used in the video: {}", e))?;
+            let decoder = codec_context.decoder().video().map_err(|e| format!("Unable to decode the codec used in the video: {e}"))?;
 
             let (dest_width, dest_height) = self.settings.dimensions_for_image(decoder.width() as _, decoder.height() as _);
 
@@ -65,13 +65,13 @@ impl FfmpegDecoder {
             let mut filter = ffmpeg::filter::Graph::new();
             filter.add(&ffmpeg::filter::find("buffer").ok_or("ffmpeg format error")?, "in", &buffer_args)?;
             filter.add(&ffmpeg::filter::find("buffersink").ok_or("ffmpeg format error")?, "out", "")?;
-            filter.output("in", 0)?.input("out", 0)?.parse(&format!("fps=fps={},format=rgba", filter_fps))?;
+            filter.output("in", 0)?.input("out", 0)?.parse(&format!("fps=fps={filter_fps},format=rgba"))?;
             filter.validate()?;
             (stream.index(), decoder, filter)
         };
 
         let add_frame = |rgba_frame: &ffmpeg::util::frame::Video, pts: f64, pos: i64| -> BinResult<()> {
-            let stride = rgba_frame.stride(0) as usize;
+            let stride = rgba_frame.stride(0);
             if stride % 4 != 0 {
                 Err("incompatible video")?;
             }
@@ -88,7 +88,7 @@ impl FfmpegDecoder {
         let mut filt_frame = ffmpeg::util::frame::Video::empty();
         let mut i = 0;
         let mut pts_last_packet = 0;
-        let pts_frame_step = 1.0 / self.rate.fps.unwrap_or(DEFAULT_FPS) as f64;
+        let pts_frame_step = 1.0 / f64::from(self.rate.fps.unwrap_or(DEFAULT_FPS));
 
         let packets = self.input_context.packets().filter_map(|(s, packet)| {
             if s.index() != stream_index {
@@ -107,13 +107,14 @@ impl FfmpegDecoder {
             loop {
                 match decoder.receive_frame(&mut vid_frame) {
                     Ok(()) => (),
-                    Err(ffmpeg::Error::Other { errno: ffmpeg::error::EAGAIN }) | Err(ffmpeg::Error::Eof) => break,
+                    Err(ffmpeg::Error::Other { errno: ffmpeg::error::EAGAIN } |
+ffmpeg::Error::Eof) => break,
                     Err(e) => return Err(Box::new(e)),
                 }
                 filter.get("in").ok_or("ffmpeg format error")?.source().add(&vid_frame)?;
                 let mut out = filter.get("out").ok_or("ffmpeg format error")?;
                 let mut out = out.sink();
-                while let Ok(..) = out.frame(&mut filt_frame) {
+                while out.frame(&mut filt_frame).is_ok() {
                     add_frame(&filt_frame, pts_frame_step * i as f64, i)?;
                     i += 1;
                 }
@@ -124,7 +125,7 @@ impl FfmpegDecoder {
         filter.get("in").ok_or("ffmpeg format error")?.source().close(pts_last_packet)?;
         let mut out = filter.get("out").ok_or("ffmpeg format error")?;
         let mut out = out.sink();
-        while let Ok(..) = out.frame(&mut filt_frame) {
+        while out.frame(&mut filt_frame).is_ok() {
             add_frame(&filt_frame, pts_frame_step * i as f64, i)?;
             i += 1;
         }

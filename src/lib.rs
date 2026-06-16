@@ -135,7 +135,7 @@ impl SettingsExt {
         // but don't change dithering unless gifsicle quality < 90, and don't completely disable it
         let gifsicle_factor = 0.25 + f32::from(gifsicle_quality) * (1. / 100. * 1. / 0.9 * 0.75);
 
-        (f32::from(self.s.quality) * (1. / 50. * gifsicle_factor) - 1.).clamp(0.2, 1.)
+        f32::from(self.s.quality).mul_add(1. / 50. * gifsicle_factor, -1.).clamp(0.2, 1.)
     }
 }
 
@@ -1010,7 +1010,7 @@ impl<T> PushInCapacity<T> for Vec<T> {
     #[inline(always)]
     #[cfg_attr(debug_assertions, track_caller)]
     fn push_in_cap(&mut self, val: T) {
-        debug_assert!(self.capacity() != self.len());
+        debug_assert_ne!(self.capacity(), self.len());
         if self.capacity() != self.len() {
             self.push(val);
         }

@@ -109,8 +109,8 @@ pub struct GifskiHandleInternal {
 /// See `gifski_add_frame_png_file` and `gifski_end_adding_frames`
 ///
 /// Returns a handle for the other functions, or `NULL` on error (if the settings are invalid).
-#[no_mangle]
-pub unsafe extern "C" fn gifski_new(settings: *const GifskiSettings) -> *const GifskiHandle {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_new(settings: *const GifskiSettings) -> *const GifskiHandle { unsafe {
     let Some(settings) = settings.as_ref() else {
         return ptr::null_mut();
     };
@@ -136,13 +136,13 @@ pub unsafe extern "C" fn gifski_new(settings: *const GifskiSettings) -> *const G
     } else {
         ptr::null_mut()
     }
-}
+}}
 
 /// Quality 1-100 of temporal denoising. Lower values reduce motion. Defaults to `settings.quality`.
 ///
 /// Only valid immediately after calling `gifski_new`, before any frames are added.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_set_motion_quality(handle: *mut GifskiHandle, quality: u8) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_set_motion_quality(handle: *mut GifskiHandle, quality: u8) -> GifskiError { unsafe {
     let Some(g) = borrow(handle) else { return GifskiError::NULL_ARG };
 
     if let Ok(Some(w)) = g.writer.lock().as_deref_mut() {
@@ -152,14 +152,14 @@ pub unsafe extern "C" fn gifski_set_motion_quality(handle: *mut GifskiHandle, qu
     } else {
         GifskiError::INVALID_STATE
     }
-}
+}}
 
 /// Quality 1-100 of gifsicle compression. Lower values add noise. Defaults to `settings.quality`.
 ///
 /// Has no effect if the `gifsicle` feature hasn't been enabled.
 /// Only valid immediately after calling `gifski_new`, before any frames are added.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_set_lossy_quality(handle: *mut GifskiHandle, quality: u8) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_set_lossy_quality(handle: *mut GifskiHandle, quality: u8) -> GifskiError { unsafe {
     let Some(g) = borrow(handle) else { return GifskiError::NULL_ARG };
 
     if let Ok(Some(w)) = g.writer.lock().as_deref_mut() {
@@ -169,13 +169,13 @@ pub unsafe extern "C" fn gifski_set_lossy_quality(handle: *mut GifskiHandle, qua
     } else {
         GifskiError::INVALID_STATE
     }
-}
+}}
 
 /// If `true`, encoding will be significantly slower, but may look a bit better.
 ///
 /// Only valid immediately after calling `gifski_new`, before any frames are added.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_set_extra_effort(handle: *mut GifskiHandle, extra: bool) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_set_extra_effort(handle: *mut GifskiHandle, extra: bool) -> GifskiError { unsafe {
     let Some(g) = borrow(handle) else { return GifskiError::NULL_ARG };
 
     if let Ok(Some(w)) = g.writer.lock().as_deref_mut() {
@@ -185,13 +185,13 @@ pub unsafe extern "C" fn gifski_set_extra_effort(handle: *mut GifskiHandle, extr
     } else {
         GifskiError::INVALID_STATE
     }
-}
+}}
 
 /// Adds a fixed color that will be kept in the palette at all times.
 ///
 /// Only valid immediately after calling `gifski_new`, before any frames are added.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_add_fixed_color(handle: *mut GifskiHandle, col_r: u8, col_g: u8, col_b: u8) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_add_fixed_color(handle: *mut GifskiHandle, col_r: u8, col_g: u8, col_b: u8) -> GifskiError { unsafe {
     let Some(g) = borrow(handle) else {
         return GifskiError::NULL_ARG;
     };
@@ -202,7 +202,7 @@ pub unsafe extern "C" fn gifski_add_fixed_color(handle: *mut GifskiHandle, col_r
     } else {
         GifskiError::INVALID_STATE
     }
-}
+}}
 
 /// Insert a new frame at the position of `frame_number`.
 ///
@@ -220,9 +220,9 @@ pub unsafe extern "C" fn gifski_add_fixed_color(handle: *mut GifskiHandle, col_r
 /// This function may block and wait until encoding can start. Make sure to call `gifski_set_write_callback` or `gifski_set_file_output` first to avoid a deadlock.
 ///
 /// Returns 0 (`GIFSKI_OK`) on success, and non-0 `GIFSKI_*` constant on error.
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[cfg(feature = "png")]
-pub unsafe extern "C" fn gifski_add_frame_png_file(handle: *const GifskiHandle, frame_number: u32, file_path: *const c_char, presentation_timestamp: f64) -> GifskiError {
+pub unsafe extern "C" fn gifski_add_frame_png_file(handle: *const GifskiHandle, frame_number: u32, file_path: *const c_char, presentation_timestamp: f64) -> GifskiError { unsafe {
     if file_path.is_null() {
         return GifskiError::NULL_ARG;
     }
@@ -239,7 +239,7 @@ pub unsafe extern "C" fn gifski_add_frame_png_file(handle: *const GifskiHandle, 
         g.print_error(format!("frame {frame_number} can't be added any more, because gifski_end_adding_frames has been called already"));
         GifskiError::INVALID_STATE
     }
-}
+}}
 
 /// Insert a new frame at the position of `frame_number`.
 ///
@@ -265,8 +265,8 @@ pub unsafe extern "C" fn gifski_add_frame_png_file(handle: *const GifskiHandle, 
 /// This function may block and wait until encoding can start. Make sure to call `gifski_set_write_callback` or `gifski_set_file_output` first to avoid a deadlock.
 ///
 /// Returns 0 (`GIFSKI_OK`) on success, and non-0 `GIFSKI_*` constant on error.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_add_frame_rgba(handle: *const GifskiHandle, frame_number: u32, width: u32, height: u32, pixels: *const RGBA8, presentation_timestamp: f64) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_add_frame_rgba(handle: *const GifskiHandle, frame_number: u32, width: u32, height: u32, pixels: *const RGBA8, presentation_timestamp: f64) -> GifskiError { unsafe {
     if pixels.is_null() {
         return GifskiError::NULL_ARG;
     }
@@ -277,20 +277,20 @@ pub unsafe extern "C" fn gifski_add_frame_rgba(handle: *const GifskiHandle, fram
     let height = height as usize;
     let pixels = slice::from_raw_parts(pixels, width * height);
     add_frame_rgba(handle, frame_number, Img::new(pixels.into(), width, height), presentation_timestamp)
-}
+}}
 
 /// Same as `gifski_add_frame_rgba`, but with bytes per row arg.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_add_frame_rgba_stride(handle: *const GifskiHandle, frame_number: u32, width: u32, height: u32, bytes_per_row: u32, pixels: *const RGBA8, presentation_timestamp: f64) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_add_frame_rgba_stride(handle: *const GifskiHandle, frame_number: u32, width: u32, height: u32, bytes_per_row: u32, pixels: *const RGBA8, presentation_timestamp: f64) -> GifskiError { unsafe {
     let (pixels, stride) = match pixels_slice(pixels, width, height, bytes_per_row) {
         Ok(v) => v,
         Err(err) => return err,
     };
     let img = ImgVec::new_stride(pixels.into(), width as _, height as _, stride);
     add_frame_rgba(handle, frame_number, img, presentation_timestamp)
-}
+}}
 
-unsafe fn pixels_slice<'a, T>(pixels: *const T, width: u32, height: u32, bytes_per_row: u32) -> Result<(&'a [T], usize), GifskiError> {
+unsafe fn pixels_slice<'a, T>(pixels: *const T, width: u32, height: u32, bytes_per_row: u32) -> Result<(&'a [T], usize), GifskiError> { unsafe {
     if pixels.is_null() {
         return Err(GifskiError::NULL_ARG);
     }
@@ -302,7 +302,7 @@ unsafe fn pixels_slice<'a, T>(pixels: *const T, width: u32, height: u32, bytes_p
     }
     let pixels = slice::from_raw_parts(pixels, stride * height + width - stride);
     Ok((pixels, stride))
-}
+}}
 
 fn add_frame_rgba(handle: *const GifskiHandle, frame_number: u32, frame: ImgVec<RGBA8>, presentation_timestamp: f64) -> GifskiError {
     let Some(g) = (unsafe { borrow(handle) }) else { return GifskiError::NULL_ARG };
@@ -326,8 +326,8 @@ fn add_frame_rgba(handle: *const GifskiHandle, frame_number: u32, frame: ImgVec<
 /// The `pixels` array is copied, so you can free/reuse it immediately after this function returns.
 ///
 /// This function may block and wait until encoding can start. Make sure to call `gifski_set_write_callback` first to avoid a deadlock.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_add_frame_argb(handle: *const GifskiHandle, frame_number: u32, width: u32, bytes_per_row: u32, height: u32, pixels: *const ARGB8, presentation_timestamp: f64) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_add_frame_argb(handle: *const GifskiHandle, frame_number: u32, width: u32, bytes_per_row: u32, height: u32, pixels: *const ARGB8, presentation_timestamp: f64) -> GifskiError { unsafe {
     let (pixels, stride) = match pixels_slice(pixels, width, height, bytes_per_row) {
         Ok(v) => v,
         Err(err) => return err,
@@ -341,7 +341,7 @@ pub unsafe extern "C" fn gifski_add_frame_argb(handle: *const GifskiHandle, fram
         a: p.a,
     })).collect(), width, height);
     add_frame_rgba(handle, frame_number, img, presentation_timestamp)
-}
+}}
 
 /// Same as `gifski_add_frame_rgba`, except it expects RGB components (3 bytes per pixel).
 ///
@@ -354,8 +354,8 @@ pub unsafe extern "C" fn gifski_add_frame_argb(handle: *const GifskiHandle, fram
 /// The `pixels` array is copied, so you can free/reuse it immediately after this function returns.
 ///
 /// This function may block and wait until encoding can start. Make sure to call `gifski_set_write_callback` first to avoid a deadlock.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_add_frame_rgb(handle: *const GifskiHandle, frame_number: u32, width: u32, bytes_per_row: u32, height: u32, pixels: *const RGB8, presentation_timestamp: f64) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_add_frame_rgb(handle: *const GifskiHandle, frame_number: u32, width: u32, bytes_per_row: u32, height: u32, pixels: *const RGB8, presentation_timestamp: f64) -> GifskiError { unsafe {
     let (pixels, stride) = match pixels_slice(pixels, width, height, bytes_per_row) {
         Ok(v) => v,
         Err(err) => return err,
@@ -364,7 +364,7 @@ pub unsafe extern "C" fn gifski_add_frame_rgb(handle: *const GifskiHandle, frame
     let height = height as usize;
     let img = ImgVec::new(pixels.chunks(stride).flat_map(|r| r[0..width].iter().map(|&p| p.with_alpha(255))).collect(), width, height);
     add_frame_rgba(handle, frame_number, img, presentation_timestamp)
-}
+}}
 
 /// Get a callback for frame processed, and abort processing if desired.
 ///
@@ -379,8 +379,8 @@ pub unsafe extern "C" fn gifski_add_frame_rgb(handle: *const GifskiHandle, frame
 /// It must remain valid at all times, until `gifski_finish` completes.
 ///
 /// This function must be called before `gifski_set_file_output()` to take effect.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_set_progress_callback(handle: *const GifskiHandle, cb: unsafe extern "C" fn(*mut c_void) -> c_int, user_data: *mut c_void) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_set_progress_callback(handle: *const GifskiHandle, cb: unsafe extern "C" fn(*mut c_void) -> c_int, user_data: *mut c_void) -> GifskiError { unsafe {
     match set_callbacks(borrow(handle)) {
         Ok(mut callbacks) => {
             callbacks.progress = Some(ProgressCallback::new(cb, user_data));
@@ -388,7 +388,7 @@ pub unsafe extern "C" fn gifski_set_progress_callback(handle: *const GifskiHandl
         },
         Err(e) => e,
     }
-}
+}}
 
 /// Get a callback when an error occurs.
 /// This is intended mostly for logging and debugging, not for user interface.
@@ -403,8 +403,8 @@ pub unsafe extern "C" fn gifski_set_progress_callback(handle: *const GifskiHandl
 /// If the callback is not set, errors will be printed to stderr.
 ///
 /// This function must be called before `gifski_set_file_output()` to take effect.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_set_error_message_callback(handle: *const GifskiHandle, cb: unsafe extern "C" fn(*const c_char, *mut c_void), user_data: *mut c_void) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_set_error_message_callback(handle: *const GifskiHandle, cb: unsafe extern "C" fn(*const c_char, *mut c_void), user_data: *mut c_void) -> GifskiError { unsafe {
     match set_callbacks(borrow(handle)) {
         Ok(mut callbacks) => {
             callbacks.error = Some(ErrorCallback {
@@ -415,7 +415,7 @@ pub unsafe extern "C" fn gifski_set_error_message_callback(handle: *const Gifski
         },
         Err(e) => e,
     }
-}
+}}
 
 fn set_callbacks(g: Option<&GifskiHandleInternal>) -> Result<MutexGuard<'_, CCallbacks>, GifskiError> {
     let g = g.ok_or(GifskiError::NULL_ARG)?;
@@ -433,8 +433,8 @@ fn set_callbacks(g: Option<&GifskiHandleInternal>) -> Result<MutexGuard<'_, CCal
 /// This call will not block.
 ///
 /// Returns 0 (`GIFSKI_OK`) on success, and non-0 `GIFSKI_*` constant on error.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_set_file_output(handle: *const GifskiHandle, destination: *const c_char) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_set_file_output(handle: *const GifskiHandle, destination: *const c_char) -> GifskiError { unsafe {
     let Some(g) = borrow(handle) else { return GifskiError::NULL_ARG };
     catch_unwind(move || {
         let (file, path) = match prepare_for_file_writing(g, destination) {
@@ -444,7 +444,7 @@ pub unsafe extern "C" fn gifski_set_file_output(handle: *const GifskiHandle, des
         gifski_write_thread_start(g, file, Some(path)).err().unwrap_or(GifskiError::OK)
     })
     .map_err(move |e| g.print_panic(e)).unwrap_or(GifskiError::THREAD_LOST)
-}
+}}
 
 fn prepare_for_file_writing(g: &GifskiHandleInternal, destination: *const c_char) -> Result<(File, PathBuf), GifskiError> {
     if destination.is_null() {
@@ -502,8 +502,8 @@ impl io::Write for CallbackWriter {
 /// The callback function must be thread-safe. It must remain valid at all times, until `gifski_finish` completes.
 ///
 /// Returns 0 (`GIFSKI_OK`) on success, and non-0 `GIFSKI_*` constant on error.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_set_write_callback(handle: *const GifskiHandle, cb: Option<unsafe extern "C" fn(usize, *const u8, *mut c_void) -> c_int>, user_data: *mut c_void) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_set_write_callback(handle: *const GifskiHandle, cb: Option<unsafe extern "C" fn(usize, *const u8, *mut c_void) -> c_int>, user_data: *mut c_void) -> GifskiError { unsafe {
     let Some(g) = borrow(handle) else { return GifskiError::NULL_ARG };
     catch_unwind(move || {
         let Some(cb) = cb else { return GifskiError::NULL_ARG };
@@ -512,7 +512,7 @@ pub unsafe extern "C" fn gifski_set_write_callback(handle: *const GifskiHandle, 
         gifski_write_thread_start(g, writer, None).err().unwrap_or(GifskiError::OK)
     })
     .map_err(move |e| g.print_panic(e)).unwrap_or(GifskiError::THREAD_LOST)
-}
+}}
 
 fn gifski_write_thread_start<W: 'static +  Write + Send>(g: &GifskiHandleInternal, file: W, path: Option<PathBuf>) -> Result<(), GifskiError> {
     let mut t = g.write_thread.lock().map_err(|_| GifskiError::THREAD_LOST)?;
@@ -547,10 +547,10 @@ fn gifski_write_thread_start<W: 'static +  Write + Send>(g: &GifskiHandleInterna
     }
 }
 
-unsafe fn borrow<'a>(handle: *const GifskiHandle) -> Option<&'a GifskiHandleInternal> {
+unsafe fn borrow<'a>(handle: *const GifskiHandle) -> Option<&'a GifskiHandleInternal> { unsafe {
     let g = handle.cast::<GifskiHandleInternal>();
     g.as_ref()
-}
+}}
 
 /// The last step:
 ///  - stops accepting any more frames (`gifski_add_frame_*` calls are blocked)
@@ -562,8 +562,8 @@ unsafe fn borrow<'a>(handle: *const GifskiHandle) -> Option<&'a GifskiHandleInte
 /// After this call, the handle is freed and can't be used any more.
 ///
 /// Returns 0 (`GIFSKI_OK`) on success, and non-0 `GIFSKI_*` constant on error.
-#[no_mangle]
-pub unsafe extern "C" fn gifski_finish(g: *const GifskiHandle) -> GifskiError {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn gifski_finish(g: *const GifskiHandle) -> GifskiError { unsafe {
     if g.is_null() {
         return GifskiError::NULL_ARG;
     }
@@ -590,7 +590,7 @@ pub unsafe extern "C" fn gifski_finish(g: *const GifskiHandle) -> GifskiError {
         }
     })
     .map_err(move |e| g.print_panic(e)).unwrap_or(GifskiError::THREAD_LOST)
-}
+}}
 
 impl GifskiHandleInternal {
     #[cold]
@@ -626,17 +626,17 @@ fn c_cb() {
     };
     assert!(!g.is_null());
     let mut write_called = false;
-    unsafe extern "C" fn cb(_s: usize, _buf: *const u8, user_data: *mut c_void) -> c_int {
+    unsafe extern "C" fn cb(_s: usize, _buf: *const u8, user_data: *mut c_void) -> c_int { unsafe {
         let write_called = user_data.cast::<bool>();
         *write_called = true;
         0
-    }
+    }}
     let mut progress_called = 0u32;
-    unsafe extern "C" fn pcb(user_data: *mut c_void) -> c_int {
+    unsafe extern "C" fn pcb(user_data: *mut c_void) -> c_int { unsafe {
         let progress_called = user_data.cast::<u32>();
         *progress_called += 1;
         1
-    }
+    }}
     unsafe {
         assert_eq!(GifskiError::OK, gifski_set_progress_callback(g, pcb, ptr::addr_of_mut!(progress_called).cast()));
         assert_eq!(GifskiError::OK, gifski_set_write_callback(g, Some(cb), ptr::addr_of_mut!(write_called).cast()));
@@ -729,13 +729,13 @@ fn test_error_callback() {
         assert_eq!(u1 as usize, 1);
         0
     }
-    unsafe extern "C" fn errcb(msg: *const c_char, user_data: *mut c_void) {
+    unsafe extern "C" fn errcb(msg: *const c_char, user_data: *mut c_void) { unsafe {
         let callback_msg = user_data.cast::<Option<String>>();
         *callback_msg = Some(CStr::from_ptr(msg).to_str().unwrap().to_string());
-    }
+    }}
     let mut callback_msg: Option<String> = None;
     unsafe {
-        assert_eq!(GifskiError::OK, gifski_set_error_message_callback(g, errcb, std::ptr::addr_of_mut!(callback_msg) as _));
+        assert_eq!(GifskiError::OK, gifski_set_error_message_callback(g, errcb, std::ptr::addr_of_mut!(callback_msg).cast()));
         assert_eq!(GifskiError::OK, gifski_set_write_callback(g, Some(cb), 1 as _));
         assert_eq!(GifskiError::INVALID_STATE, gifski_set_write_callback(g, Some(cb), 1 as _));
         assert_eq!(GifskiError::INVALID_STATE, gifski_finish(g));

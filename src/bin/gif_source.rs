@@ -1,6 +1,6 @@
 //! This is for reading GIFs as an input for re-encoding as another GIF
 
-use crate::source::{Fps, Source, DEFAULT_FPS};
+use crate::source::{DEFAULT_FPS, Fps, Source};
 use crate::{BinResult, SrcPath};
 use gif::Decoder;
 use gifski::Collector;
@@ -50,7 +50,7 @@ impl Source for GifDecoder {
             let presentation_timestamp = f64::from(delay_ts) * (1. / (100. * f64::from(self.speed)));
             delay_ts += u32::from(frame.delay);
             if skip_frames && presentation_timestamp < wanted_presentation_timestamp {
-                continue
+                continue;
             }
             wanted_presentation_timestamp += wanted_frame_time;
             c.add_frame_rgba(idx, pixels, presentation_timestamp)?;

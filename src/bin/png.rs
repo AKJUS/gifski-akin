@@ -1,5 +1,5 @@
-use crate::source::{Fps, Source, DEFAULT_FPS};
 use crate::BinResult;
+use crate::source::{DEFAULT_FPS, Fps, Source};
 use gifski::Collector;
 use std::path::PathBuf;
 

@@ -1,4 +1,4 @@
-use crate::source::{Fps, Source, DEFAULT_FPS};
+use crate::source::{DEFAULT_FPS, Fps, Source};
 use crate::{BinResult, SrcPath};
 use gifski::{Collector, Settings};
 use imgref::*;
@@ -107,8 +107,7 @@ impl FfmpegDecoder {
             loop {
                 match decoder.receive_frame(&mut vid_frame) {
                     Ok(()) => (),
-                    Err(ffmpeg::Error::Other { errno: ffmpeg::error::EAGAIN } |
-ffmpeg::Error::Eof) => break,
+                    Err(ffmpeg::Error::Other { errno: ffmpeg::error::EAGAIN } | ffmpeg::Error::Eof) => break,
                     Err(e) => return Err(Box::new(e)),
                 }
                 filter.get("in").ok_or("ffmpeg format error")?.source().add(&vid_frame)?;

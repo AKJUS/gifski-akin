@@ -1,7 +1,6 @@
 use crate::BinResult;
 use gifski::Collector;
 
-
 pub const DEFAULT_FPS: f32 = 20.;
 pub trait Source {
     fn total_frames(&self) -> Option<u64>;

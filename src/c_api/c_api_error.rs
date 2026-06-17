@@ -29,8 +29,8 @@ pub enum GifskiError {
 impl From<GifskiError> for io::Error {
     #[cold]
     fn from(g: GifskiError) -> Self {
-        use std::io::ErrorKind as EK;
         use GifskiError::*;
+        use std::io::ErrorKind as EK;
         match g {
             OK => panic!("wrong err code"),
             NOT_FOUND => EK::NotFound,

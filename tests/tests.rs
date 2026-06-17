@@ -1,4 +1,4 @@
-use gifski::{new, progress, Settings};
+use gifski::{Settings, new, progress};
 use imgref::{ImgRef, ImgRefMut, ImgVec};
 use rgb::{ComponentMap, RGBA8};
 use std::path::{Path, PathBuf};

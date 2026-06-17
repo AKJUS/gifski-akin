@@ -1,13 +1,12 @@
-use std::io::BufReader;
-use std::io::Read;
-use imgref::ImgVec;
+use crate::source::{DEFAULT_FPS, Fps, Source};
+use crate::{BinResult, SrcPath};
 use gifski::Collector;
+use imgref::ImgVec;
+use std::io::{BufReader, Read};
 use y4m::{Colorspace, Decoder, ParseError};
+use yuv::YUV;
 use yuv::color::{MatrixCoefficients, Range};
 use yuv::convert::RGBConvert;
-use yuv::YUV;
-use crate::{SrcPath, BinResult};
-use crate::source::{Fps, Source, DEFAULT_FPS};
 
 pub struct Y4MDecoder {
     fps: Fps,

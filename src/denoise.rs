@@ -1,11 +1,10 @@
-use std::collections::VecDeque;
 use crate::PushInCapacity;
 pub use imgref::ImgRef;
 use imgref::ImgVec;
 use loop9::loop9_img;
-use rgb::ComponentMap;
-use rgb::RGB8;
 pub use rgb::RGBA8;
+use rgb::{ComponentMap, RGB8};
+use std::collections::VecDeque;
 
 const LOOKAHEAD: usize = 5;
 
@@ -283,7 +282,7 @@ macro_rules! blur_channel {
         tmp += u16::from(if $bot.curr.a > 0 { $bot.curr.$chan } else { $mid.curr.$chan });
         tmp += u16::from(if $bot.next.a > 0 { $bot.next.$chan } else { $mid.curr.$chan });
         (tmp / 9) as u8
-    }}
+    }};
 }
 
 #[inline(never)]
@@ -420,9 +419,9 @@ fn one() {
 
 #[test]
 fn two() {
-    let mut d = Denoiser::new(1,1, 100).unwrap();
-    let w = RGBA8::new(254,253,252,255);
-    let b = RGBA8::new(8,7,0,255);
+    let mut d = Denoiser::new(1, 1, 100).unwrap();
+    let w = RGBA8::new(254, 253, 252, 255);
+    let b = RGBA8::new(8, 7, 0, 255);
     d.push_frame_test(ImgVec::new(vec![w], 1, 1).as_ref(), 0).unwrap();
     d.push_frame_test(ImgVec::new(vec![b], 1, 1).as_ref(), 1).unwrap();
     assert!(matches!(d.pop(), Denoised::NotYet));
@@ -434,9 +433,9 @@ fn two() {
 
 #[test]
 fn three() {
-    let mut d = Denoiser::new(1,1, 100).unwrap();
-    let w = RGBA8::new(254,253,252,255);
-    let b = RGBA8::new(8,7,0,255);
+    let mut d = Denoiser::new(1, 1, 100).unwrap();
+    let w = RGBA8::new(254, 253, 252, 255);
+    let b = RGBA8::new(8, 7, 0, 255);
     d.push_frame_test(ImgVec::new(vec![w], 1, 1).as_ref(), 0).unwrap();
     d.push_frame_test(ImgVec::new(vec![b], 1, 1).as_ref(), 1).unwrap();
     d.push_frame_test(ImgVec::new(vec![b], 1, 1).as_ref(), 2).unwrap();
@@ -450,10 +449,10 @@ fn three() {
 
 #[test]
 fn four() {
-    let mut d = Denoiser::new(1,1, 100).unwrap();
-    let w = RGBA8::new(254,253,252,255);
-    let b = RGBA8::new(8,7,0,255);
-    let t = RGBA8::new(0,0,0,0);
+    let mut d = Denoiser::new(1, 1, 100).unwrap();
+    let w = RGBA8::new(254, 253, 252, 255);
+    let b = RGBA8::new(8, 7, 0, 255);
+    let t = RGBA8::new(0, 0, 0, 0);
     d.push_frame_test(ImgVec::new(vec![w], 1, 1).as_ref(), 0).unwrap();
     d.push_frame_test(ImgVec::new(vec![t], 1, 1).as_ref(), 1).unwrap();
     d.push_frame_test(ImgVec::new(vec![b], 1, 1).as_ref(), 2).unwrap();
@@ -469,10 +468,10 @@ fn four() {
 
 #[test]
 fn five() {
-    let mut d = Denoiser::new(1,1, 100).unwrap();
-    let w = RGBA8::new(254,253,252,255);
-    let b = RGBA8::new(8,7,0,255);
-    let t = RGBA8::new(0,0,0,0);
+    let mut d = Denoiser::new(1, 1, 100).unwrap();
+    let w = RGBA8::new(254, 253, 252, 255);
+    let b = RGBA8::new(8, 7, 0, 255);
+    let t = RGBA8::new(0, 0, 0, 0);
     d.push_frame_test(ImgVec::new(vec![w], 1, 1).as_ref(), 0).unwrap();
     d.push_frame_test(ImgVec::new(vec![t], 1, 1).as_ref(), 1).unwrap();
     d.push_frame_test(ImgVec::new(vec![b], 1, 1).as_ref(), 2).unwrap();
@@ -490,11 +489,11 @@ fn five() {
 
 #[test]
 fn six() {
-    let mut d = Denoiser::new(1,1, 100).unwrap();
-    let w = RGBA8::new(254,253,252,255);
-    let b = RGBA8::new(8,7,0,255);
-    let t = RGBA8::new(0,0,0,0);
-    let x = RGBA8::new(4,5,6,255);
+    let mut d = Denoiser::new(1, 1, 100).unwrap();
+    let w = RGBA8::new(254, 253, 252, 255);
+    let b = RGBA8::new(8, 7, 0, 255);
+    let t = RGBA8::new(0, 0, 0, 0);
+    let x = RGBA8::new(4, 5, 6, 255);
     d.push_frame_test(ImgVec::new(vec![w], 1, 1).as_ref(), 0).unwrap();
     assert!(matches!(d.pop(), Denoised::NotYet));
     d.push_frame_test(ImgVec::new(vec![b], 1, 1).as_ref(), 1).unwrap();
@@ -517,10 +516,10 @@ fn six() {
 
 #[test]
 fn many() {
-    let mut d = Denoiser::new(1,1, 100).unwrap();
-    let w = RGBA8::new(255,254,253,255);
-    let b = RGBA8::new(1,2,3,255);
-    let t = RGBA8::new(0,0,0,0);
+    let mut d = Denoiser::new(1, 1, 100).unwrap();
+    let w = RGBA8::new(255, 254, 253, 255);
+    let b = RGBA8::new(1, 2, 3, 255);
+    let t = RGBA8::new(0, 0, 0, 0);
     d.push_frame_test(ImgVec::new(vec![w], 1, 1).as_ref(), "w0").unwrap();
     assert!(matches!(d.pop(), Denoised::NotYet));
     d.push_frame_test(ImgVec::new(vec![w], 1, 1).as_ref(), "w1").unwrap();

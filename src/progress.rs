@@ -5,8 +5,8 @@
 #[deprecated(note = "The pbr dependency is no longer exposed. Please use a newtype pattern and write your own trait impl for it")]
 pub use pbr::ProgressBar;
 
-use std::os::raw::{c_int, c_char, c_void};
 use std::ffi::CString;
+use std::os::raw::{c_char, c_int, c_void};
 
 /// A trait that is used to report progress to some consumer.
 pub trait ProgressReporter: Send {

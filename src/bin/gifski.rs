@@ -11,15 +11,9 @@
 use clap::builder::NonEmptyStringValueParser;
 use clap::error::ErrorKind::MissingRequiredArgument;
 use clap::value_parser;
-use yuv::color::MatrixCoefficients;
 use gifski::{Repeat, Settings};
-use std::io::stdin;
-use std::io::BufRead;
-use std::io::BufReader;
-use std::io::IsTerminal;
-use std::io::Read;
-use std::io::StdinLock;
-use std::io::Stdout;
+use std::io::{BufRead, BufReader, IsTerminal, Read, StdinLock, Stdout, stdin};
+use yuv::color::MatrixCoefficients;
 
 #[cfg(feature = "video")]
 mod ffmpeg_source;

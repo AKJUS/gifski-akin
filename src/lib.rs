@@ -65,8 +65,8 @@ use std::cell::Cell;
 use std::io::prelude::*;
 use std::num::NonZeroU8;
 use std::rc::Rc;
-use std::sync::atomic::Ordering::Relaxed;
 use std::sync::Mutex;
+use std::sync::atomic::Ordering::Relaxed;
 use std::thread;
 
 #[cfg(feature = "wasm")]
